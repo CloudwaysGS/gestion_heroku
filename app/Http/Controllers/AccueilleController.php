@@ -19,7 +19,6 @@ class AccueilleController extends Controller
      */
     public function index()
     {
-        // Liste des périodes à analyser
         $periods = [
             'Aujourd\'hui' => today(),
             'Hier' => today()->subDay(),
@@ -31,12 +30,11 @@ class AccueilleController extends Controller
             'Année dernière' => [now()->subYear()->startOfYear(), now()->subYear()->endOfYear()],
         ];
 
-        // Préparer les données
         $salesData = [];
 
         foreach ($periods as $key => $period) {
             if (is_array($period)) {
-                // Si la période est un intervalle (ex: cette semaine)
+
                 $totals = Facturotheque::selectRaw('
                 SUM(total) as total,
                 SUM(CASE WHEN avance IS NOT NULL THEN avance ELSE total END) as totalWithAvance
@@ -52,7 +50,7 @@ class AccueilleController extends Controller
                     ->orderByDesc('total_sales')
                     ->first();
             } else {
-                // Si la période est une date spécifique (ex: aujourd'hui, hier)
+
                 $totals = Facturotheque::selectRaw('
                 SUM(total) as total,
                 SUM(IF(avance IS NOT NULL, avance, total)) as totalWithAvance
@@ -74,11 +72,10 @@ class AccueilleController extends Controller
                 'totalWithAvance' => $totals->totalWithAvance,
                 'max' => $max,
                 'min' => $min,
-                'topProduct' => $topProduct ? $topProduct->produit_id : null, // Assurez-vous d'avoir l'ID du produit
+                'topProduct' => $topProduct ? $topProduct->produit_id : null, 
             ];
         }
 
-        // Passer les données à la vue
         return view('statistique.ventes', [
             'salesData' => $salesData,
         ]);
